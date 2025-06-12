@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scientific Calculator 3D</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f0f4f8;
+      transition: background 0.3s ease;
+    }
+
+    .dark-mode {
+      background-color: #0f172a;
+      color: white;
+    }
+
+    .toggle-btn {
+      margin-bottom: 15px;
+      padding: 10px 20px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .controls select, .controls input {
+      padding: 6px;
+      font-size: 1em;
+      border-radius: 6px;
+    }
+
+    .calculator {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 360px;
+      transform: perspective(800px) rotateX(2deg) rotateY(2deg);
+    }
+
+    .dark-mode .calculator {
+      background: #1e293b;
+    }
+
+    #display {
+      width: 100%;
+      height: 50px;
+      font-size: 1.6em;
+      text-align: right;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #f1f5f9;
+    }
+
+    .dark-mode #display {
+      background: #334155;
+      color: white;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      background: #e0e7ff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn:hover {
+      background: #c7d2fe;
+    }
+
+    .dark-mode .btn {
+      background: #475569;
+      color: white;
+    }
+
+    .dark-mode .btn:hover {
+      background: #64748b;
+    }
+
+    .function { background: #a5f3fc; }
+    .operator { background: #fcd34d; }
+    .equals { background: #6ee7b7; }
+    .clear { background: #f87171; }
+
+    .history {
+      margin-top: 15px;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 0.9em;
+      width: 100%;
+      max-width: 360px;
+      background: #e2e8f0;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .dark-mode .history {
+      background: #334155;
+      color: white;
+    }
+
+    @media (max-width: 420px) {
+      .buttons {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .toggle-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="toggle-btn" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+
+  <div class="controls">
+    <label>
+      Angle:
+      <select id="angleMode">
+        <option value="DEG">Degrees</option>
+        <option value="RAD">Radians</option>
+      </select>
+    </label>
+
+    <label>
+      Convert:
+      <select id="unitSelect">
+        <option value="none">Select</option>
+        <option value="cmToIn">cm → inch</option>
+        <option value="inToCm">inch → cm</option>
+        <option value="kgToLb">kg → lb</option>
+        <option value="lbToKg">lb → kg</option>
+        <option value="cToF">°C → °F</option>
+        <option value="fToC">°F → °C</option>
+      </select>
+    </label>
+    <input type="number" id="unitInput" placeholder="Enter value" />
+    <button class="toggle-btn" onclick="convertUnit()">🔁 Convert</button>
+    <button class="toggle-btn" onclick="exportHistory()">📄 Export History</button>
+  </div>
+
+  <div class="calculator">
+    <input type="text" id="display" disabled />
+    <div class="buttons">
+      <button class="btn function" onclick="appendTrig('sin')">sin</button>
+      <button class="btn function" onclick="appendTrig('cos')">cos</button>
+      <button class="btn function" onclick="appendTrig('tan')">tan</button>
+      <button class="btn function" onclick="appendFunc('Math.log10(')">log</button>
+      <button class="btn function" onclick="appendFunc('Math.log(')">ln</button>
+
+      <button class="btn function" onclick="appendFunc('Math.exp(')">exp</button>
+      <button class="btn function" onclick="appendFunc('Math.asin(')">asin</button>
+      <button class="btn function" onclick="appendFunc('Math.acos(')">acos</button>
+      <button class="btn function" onclick="appendFunc('Math.atan(')">atan</button>
+      <button class="btn function" onclick="appendFunc('factorial(')">n!</button>
+
+      <button class="btn" onclick="appendValue('7')">7</button>
+      <button class="btn" onclick="appendValue('8')">8</button>
+      <button class="btn" onclick="appendValue('9')">9</button>
+      <button class="btn operator" onclick="appendValue('/')">÷</button>
+      <button class="btn function" onclick="appendValue('Math.PI')">π</button>
+
+      <button class="btn" onclick="appendValue('4')">4</button>
+      <button class="btn" onclick="appendValue('5')">5</button>
+      <button class="btn" onclick="appendValue('6')">6</button>
+      <button class="btn operator" onclick="appendValue('*')">×</button>
+      <button class="btn function" onclick="appendValue('Math.E')">e</button>
+
+      <button class="btn" onclick="appendValue('1')">1</button>
+      <button class="btn" onclick="appendValue('2')">2</button>
+      <button class="btn" onclick="appendValue('3')">3</button>
+      <button class="btn operator" onclick="appendValue('-')">−</button>
+      <button class="btn function" onclick="appendValue('**')">^</button>
+
+      <button class="btn" onclick="appendValue('0')">0</button>
+      <button class="btn" onclick="appendValue('.')">.</button>
+      <button class="btn" onclick="backspace()">←</button>
+      <button class="btn operator" onclick="appendValue('+')">+</button>
+      <button class="btn equals" onclick="calculate()">=</button>
+
+      <button class="btn clear" onclick="clearDisplay()" style="grid-column: span 5;">C</button>
+    </div>
+  </div>
+
+  <div class="history" id="history">
+    <strong>History:</strong><br />
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const angleMode = document.getElementById('angleMode');
+    const unitSelect = document.getElementById('unitSelect');
+    const unitInput = document.getElementById('unitInput');
+    const historyBox = document.getElementById('history');
+    const body = document.body;
+    let historyList = JSON.parse(localStorage.getItem('calcHistory') || '[]');
+
+    function toggleDarkMode() {
+      body.classList.toggle("dark-mode");
+    }
+
+    function appendValue(val) {
+      display.value += val;
+    }
+
+    function appendFunc(func) {
+      display.value += func;
+    }
+
+    function appendTrig(funcName) {
+      let arg = prompt(`Enter angle for ${funcName}:`);
+      if (arg === null) return;
+      let val = parseFloat(arg);
+      if (angleMode.value === "DEG") {
+        val = val * Math.PI / 180;
+      }
+      const result = Math[funcName](val);
+      display.value = result.toFixed(6);
+      addToHistory(`${funcName}(${arg}${angleMode.value === 'DEG' ? '°' : 'rad'}) = ${result.toFixed(6)}`);
+    }
+
+    function backspace() {
+      display.value = display.value.slice(0, -1);
+    }
+
+    function clearDisplay() {
+      display.value = '';
+    }
+
+    function calculate() {
+      try {
+        const result = eval(display.value);
+        addToHistory(`${display.value} = ${result}`);
+        display.value = result;
+        speakResult(result);
+      } catch {
+        display.value = 'Error';
+        speakResult('Error');
+        setTimeout(() => display.value = '', 1500);
+      }
+    }
+
+    function factorial(n) {
+      if (n === 0 || n === 1) return 1;
+      let result = 1;
+      for (let i = 2; i <= n; i++) result *= i;
+      return result;
+    }
+
+    function addToHistory(entry) {
+      historyList.unshift(entry);
+      if (historyList.length > 10) historyList.pop();
+      localStorage.setItem('calcHistory', JSON.stringify(historyList));
+      historyBox.innerHTML = "<strong>History:</strong><br>" + historyList.join("<br>");
+    }
+
+    function exportHistory() {
+      const blob = new Blob([historyList.join("\n")], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'calculator_history.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function convertUnit() {
+      const val = parseFloat(unitInput.value);
+      let result = null;
+      switch (unitSelect.value) {
+        case "cmToIn": result = val / 2.54; break;
+        case "inToCm": result = val * 2.54; break;
+        case "kgToLb": result = val * 2.20462; break;
+        case "lbToKg": result = val / 2.20462; break;
+        case "cToF": result = val * 9/5 + 32; break;
+        case "fToC": result = (val - 32) * 5/9; break;
+        default: alert("Select a valid conversion."); return;
+      }
+      addToHistory(`Converted ${val} (${unitSelect.value}) = ${result.toFixed(4)}`);
+      alert(`Result: ${result.toFixed(4)}`);
+    }
+
+    function speakResult(text) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      synth.speak(utterance);
+    }
+
+    // Load persisted history
+    addToHistory('');
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
+</html>
